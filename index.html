@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signatur-Baukasten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f4f9; --surface:#ffffff; --ink:#2b2633; --muted:#6e6578; --line:#e3dbe9;
+  --accent:#7a5a99; --accent-ink:#ffffff; --soft:#efe8f4; --ok:#2f7a5b; --warn:#9a5b1e;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1c1920; --surface:#26222b; --ink:#eee9f2; --muted:#aaa1b4; --line:#3a3441;
+    --accent:#b597d4; --accent-ink:#1c1920; --soft:#302a37; --ok:#7fcba8; --warn:#e3b07a;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+header{max-width:1180px;margin:0 auto;padding:32px 20px 8px}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;font-size:2.4rem;line-height:1.1;margin:0 0 6px;color:var(--accent)}
+header p{margin:0;color:var(--muted);max-width:62ch}
+main{max-width:1180px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.tabs{display:flex;gap:4px;margin:-6px 0 18px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;font:inherit;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent);font-weight:600}
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 4px}
+.hint{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+input[type=text],input[type=url],input[type=email],input[type=tel],input[type=number],select,textarea{
+  width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{min-height:170px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row > select{flex:1;min-width:160px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.btn{font:inherit;font-size:.95rem;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.danger{color:var(--warn)}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:4px 14px 14px;margin:18px 0 0}
+legend{font-weight:600;padding:0 6px;font-size:.95rem}
+.check{display:flex;gap:8px;align-items:center;font-weight:400;margin-top:14px}
+.preview-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.preview-head h2{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.6rem;font-weight:600;margin:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:.9rem;border:0;background:none;color:var(--muted);padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--soft);color:var(--ink);font-weight:600}
+.mail{background:#ffffff;color:#333333;border-radius:10px;border:1px solid var(--line);padding:24px;margin:0 auto;width:100%;transition:max-width .25s ease;overflow-x:auto}
+.mail.phone{max-width:375px;padding:16px}
+.mail .fake{font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#999999;margin:0 0 18px}
+@media (prefers-reduced-motion:reduce){.mail{transition:none}}
+.warnings{margin:12px 0 0;padding:0;list-style:none;font-size:.9rem;color:var(--warn)}
+.warnings li{margin:2px 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.status{min-height:1.5em;font-size:.9rem;color:var(--ok);margin-top:8px}
+.steps{margin:18px 0 0;padding-left:20px;color:var(--muted);font-size:.92rem}
+.steps li{margin:4px 0}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Signatur-Baukasten</h1>
+  <p>Vorlage wählen, Text schreiben, Signatur kopieren und in Apple Mail einfügen. Alle Änderungen werden automatisch in diesem Browser gespeichert.</p>
+</header>
+
+<main>
+  <section class="panel" aria-label="Bearbeiten">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="sig">Signatur</button>
+      <button role="tab" aria-selected="false" data-tab="prof">Absender</button>
+      <button role="tab" aria-selected="false" data-tab="data">Sichern &amp; teilen</button>
+    </div>
+
+    <!-- Signatur -->
+    <div data-panel="sig">
+      <label for="tplSelect">Vorlage</label>
+      <div class="row">
+        <select id="tplSelect"></select>
+        <button class="btn" id="tplNew">Neu</button>
+        <button class="btn" id="tplDup">Duplizieren</button>
+        <button class="btn danger" id="tplDel">Löschen</button>
+      </div>
+
+      <label for="tName">Name der Vorlage</label>
+      <input type="text" id="tName" data-t="name">
+
+      <label for="tProfile">Absender</label>
+      <select id="tProfile" data-t="profileId"></select>
+
+      <label for="tText">Text über dem Abspann</label>
+      <textarea id="tText" data-t="text"></textarea>
+      <p class="hint">Leerzeile = neuer Absatz. **Wort** wird fett. [Linktext](https://adresse.de) wird ein Link.</p>
+
+      <label class="check"><input type="checkbox" data-t="showPhoto"> Foto im Abspann zeigen</label>
+
+      <fieldset>
+        <legend>Bild unter dem Abspann (optional)</legend>
+        <label for="tImg">Bild-Adresse</label>
+        <input type="url" id="tImg" data-t="img" placeholder="https://…/bild.png">
+        <label for="tImgLink">Link beim Klick aufs Bild</label>
+        <input type="url" id="tImgLink" data-t="imgLink" placeholder="https://dentolovers.de/…">
+        <div class="two">
+          <div>
+            <label for="tImgW">Breite in Pixeln</label>
+            <input type="number" id="tImgW" data-t="imgW" min="50" max="600">
+          </div>
+          <div>
+            <label for="tImgAlt">Beschreibung (falls Bilder blockiert sind)</label>
+            <input type="text" id="tImgAlt" data-t="imgAlt">
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Absender -->
+    <div data-panel="prof" hidden>
+      <label for="profSelect">Absender bearbeiten</label>
+      <div class="row">
+        <select id="profSelect"></select>
+        <button class="btn" id="profNew">Neu</button>
+        <button class="btn danger" id="profDel">Löschen</button>
+      </div>
+      <p class="hint">Ein Absender ist ein fester Abspann, z. B. pro Unternehmen, Konto oder Kollegin.</p>
+
+      <label for="pLabel">Bezeichnung (nur für dich sichtbar)</label>
+      <input type="text" id="pLabel" data-p="label">
+      <div class="two">
+        <div><label for="pName">Name im Abspann</label><input type="text" id="pName" data-p="name" placeholder="leer lassen = kein Name"></div>
+        <div><label for="pRole">Funktion</label><input type="text" id="pRole" data-p="role" placeholder="optional"></div>
+      </div>
+      <div class="two">
+        <div><label for="pPhoto">Foto-Adresse</label><input type="url" id="pPhoto" data-p="photo" placeholder="https://…/foto.png"></div>
+        <div><label for="pPhotoW">Fotobreite (px)</label><input type="number" id="pPhotoW" data-p="photoW" min="40" max="300"></div>
+      </div>
+      <div class="two">
+        <div><label for="pLogo">Logo-Adresse</label><input type="url" id="pLogo" data-p="logo" placeholder="https://…/logo.png"></div>
+        <div><label for="pLogoW">Logobreite (px)</label><input type="number" id="pLogoW" data-p="logoW" min="40" max="400"></div>
+      </div>
+      <label for="pWeb">Website</label>
+      <input type="text" id="pWeb" data-p="website">
+      <div class="two">
+        <div><label for="pMail">E-Mail</label><input type="email" id="pMail" data-p="email"></div>
+        <div><label for="pTel">Telefon</label><input type="tel" id="pTel" data-p="phone"></div>
+      </div>
+      <label for="pTelLink">Link beim Klick auf die Telefonnummer</label>
+      <input type="text" id="pTelLink" data-p="phoneLink" placeholder="leer = Anruf, oder z. B. https://wa.me/49…">
+      <fieldset>
+        <legend>Symbole vor den Kontaktdaten (optional)</legend>
+        <label for="pIW">Website</label><input type="text" id="pIW" data-p="iconWeb">
+        <label for="pIM">E-Mail</label><input type="text" id="pIM" data-p="iconMail">
+        <label for="pIT">Telefon</label><input type="text" id="pIT" data-p="iconTel">
+        <p class="hint">Leer lassen = Textbeschriftung (Web, Mail, Tel).</p>
+      </fieldset>
+      <label for="pColor">Akzentfarbe für Links und Beschriftungen</label>
+      <input type="color" id="pColor" data-p="color">
+    </div>
+
+    <!-- Daten -->
+    <div data-panel="data" hidden>
+      <p>Deine Vorlagen und Absender liegen nur in diesem Browser. Mit der Sicherungsdatei holst du sie auf einen anderen Rechner oder gibst sie einer Kollegin.</p>
+      <div class="actions">
+        <button class="btn primary" id="exportBtn">Sicherungsdatei herunterladen</button>
+        <label class="btn" style="margin:0;font-weight:400">Sicherungsdatei laden
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+        </label>
+      </div>
+      <p class="hint">Beim Laden werden die aktuellen Daten in diesem Browser ersetzt.</p>
+      <div class="actions"><button class="btn danger" id="resetBtn">Alles auf Anfang zurücksetzen</button></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Vorschau">
+    <div class="preview-head">
+      <h2>Vorschau</h2>
+      <div class="seg" role="group" aria-label="Ansicht">
+        <button id="viewDesk" aria-pressed="true">Rechner</button>
+        <button id="viewPhone" aria-pressed="false">Handy</button>
+      </div>
+    </div>
+    <div class="mail" id="mail">
+      <p class="fake">… deine Nachricht …</p>
+      <div id="sigOut"></div>
+    </div>
+    <ul class="warnings" id="warnings"></ul>
+    <div class="actions">
+      <button class="btn primary" id="copyRich">Signatur kopieren</button>
+      <button class="btn" id="copyHtml">HTML-Code kopieren</button>
+    </div>
+    <div class="status" id="status" role="status"></div>
+    <ol class="steps">
+      <li>„Signatur kopieren“ klicken.</li>
+      <li>Apple Mail → Einstellungen → Signaturen → Konto links wählen → „+“.</li>
+      <li>Haken bei „Immer meiner Standardschrift anpassen“ entfernen.</li>
+      <li>Ins rechte Feld klicken, Inhalt löschen, Cmd+V.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function(){
+  const KEY = 'signatur-baukasten-v2';
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  function blankProfile(label){
+    return {id:uid(),label:label,name:'',role:'',photo:'',photoW:120,logo:'',logoW:200,website:'',email:'',phone:'',phoneLink:'',iconWeb:'',iconMail:'',iconTel:'',color:'#317694'};
+  }
+  function defaults(){
+    const p1 = Object.assign(blankProfile('Dentolovers – Madlen'),{
+      photo:'bilder/madlen.png',logo:'bilder/logo-dentolovers.png',
+      website:'dentolovers.de',email:'madlen@dentolovers.de',phone:'+49 9133 6043047',phoneLink:'https://wa.me/4991336043047',
+      iconWeb:'bilder/icon-web.png',iconMail:'bilder/icon-mail.png',iconTel:'bilder/icon-tel.png'});
+    const p2 = blankProfile('Unternehmen 2');
+    const p3 = blankProfile('Outlook-Konto');
+    const t = {id:uid(),name:'Dentolovers Standard',profileId:p1.id,text:'',showPhoto:true,img:'',imgLink:'',imgW:560,imgAlt:''};
+    const t2 = {id:uid(),name:'Dentolovers mit Flyer-Banner',profileId:p1.id,text:'',showPhoto:true,
+      img:'bilder/banner-dentosophie-flyer.jpg',imgLink:'https://dentolovers.de/dentosophie-flyer/?utm_source=email&utm_medium=signatur&utm_campaign=dentosophie-flyer&utm_content=banner',imgW:560,
+      imgAlt:'Individuelle Dentosophie-Flyer für dein Wartezimmer – mehr auf dentolovers.de'};
+    return {profiles:[p1,p2,p3],templates:[t,t2],tplId:t.id,profId:p1.id};
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return defaults();
+      const d = JSON.parse(raw);
+      if(!Array.isArray(d.profiles) || !Array.isArray(d.templates) || !d.profiles.length || !d.templates.length) return defaults();
+      return d;
+    }catch(e){ return defaults(); }
+  }
+  let S = load();
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+  const tpl = () => S.templates.find(t => t.id === S.tplId) || S.templates[0];
+  const prof = id => S.profiles.find(p => p.id === id) || S.profiles[0];
+  const editProf = () => prof(S.profId);
+
+  // ---------- Signatur erzeugen ----------
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const FONT = 'font-family:Arial,Helvetica,sans-serif;';
+  const webUrl = w => /^https?:\/\//i.test(w) ? w : 'https://' + w;
+  const webShow = w => w.replace(/^https?:\/\//i,'').replace(/\/$/,'');
+  const telUrl = t => 'tel:' + t.replace(/[^\d+]/g,'');
+  const abs = u => { if(!u) return ''; try{ return new URL(u, location.href).href; }catch(e){ return u; } };
+  const num = (v, d) => { const n = parseInt(v,10); return isNaN(n) ? d : n; };
+
+  function formatText(text, color){
+    return text.trim().split(/\n\s*\n/).map(par => {
+      let h = esc(par.trim());
+      h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      h = h.replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g,
+        (m, label, url) => '<a href="' + url + '" style="color:' + color + ';text-decoration:underline;">' + label + '</a>');
+      h = h.replace(/\n/g, '<br>');
+      return '<p style="margin:0 0 12px 0;">' + h + '</p>';
+    }).join('');
+  }
+
+  function build(t, p){
+    const c = esc(p.color || '#7a5a99');
+    const rows = [];
+    if(t.text && t.text.trim()){
+      rows.push('<tr><td style="' + FONT + 'font-size:14px;line-height:21px;color:#333333;padding:0 0 14px 0;">' + formatText(t.text, c) + '</td></tr>');
+    }
+    if(t.showPhoto && p.photo){
+      const w = num(p.photoW,120);
+      let ph = '<img src="' + esc(abs(p.photo)) + '" width="' + w + '" alt="' + esc(p.name || 'Foto') + '" style="display:block;width:' + w + 'px;max-width:' + w + 'px;height:auto;border:0;">';
+      if(p.website) ph = '<a href="' + esc(webUrl(p.website)) + '" style="text-decoration:none;">' + ph + '</a>';
+      rows.push('<tr><td style="padding:0 0 10px 0;">' + ph + '</td></tr>');
+    }
+    if(p.name || p.role){
+      rows.push('<tr><td style="' + FONT + 'font-size:14px;line-height:20px;color:#333333;padding:0 0 10px 0;">' +
+        (p.name ? '<strong>' + esc(p.name) + '</strong>' : '') +
+        (p.name && p.role ? '<br>' : '') +
+        (p.role ? '<span style="color:#666666;">' + esc(p.role) + '</span>' : '') + '</td></tr>');
+    }
+    if(p.logo){
+      const w = num(p.logoW,200);
+      let img = '<img src="' + esc(abs(p.logo)) + '" width="' + w + '" alt="' + esc(p.label || 'Logo') + '" style="display:block;width:' + w + 'px;max-width:' + w + 'px;height:auto;border:0;">';
+      if(p.website) img = '<a href="' + esc(webUrl(p.website)) + '" style="text-decoration:none;">' + img + '</a>';
+      rows.push('<tr><td style="padding:0 0 12px 0;">' + img + '</td></tr>');
+    }
+    const contacts = [];
+    const line = (label, icon, href, text) => '<tr><td style="' + FONT + 'font-size:12px;line-height:22px;color:' + c + ';padding:0 10px 0 0;vertical-align:middle;white-space:nowrap;">' +
+      (icon ? '<img src="' + esc(abs(icon)) + '" width="18" height="18" alt="' + label + '" style="display:block;width:18px;height:18px;border:0;">' : label) +
+      '</td><td style="' + FONT + 'font-size:13px;line-height:22px;vertical-align:middle;"><a href="' + esc(href) + '" style="color:#333333;text-decoration:none;">' + esc(text) + '</a></td></tr>';
+    if(p.website) contacts.push(line('Web', p.iconWeb, webUrl(p.website), webShow(p.website)));
+    if(p.email) contacts.push(line('Mail', p.iconMail, 'mailto:' + p.email, p.email));
+    if(p.phone) contacts.push(line('Tel', p.iconTel, p.phoneLink ? webUrl(p.phoneLink) : telUrl(p.phone), p.phone));
+    if(contacts.length){
+      rows.push('<tr><td style="padding:0;"><table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">' + contacts.join('') + '</table></td></tr>');
+    }
+    if(t.img){
+      const w = num(t.imgW,400);
+      let img = '<img src="' + esc(abs(t.img)) + '" width="' + w + '" alt="' + esc(t.imgAlt || '') + '" style="display:block;width:' + w + 'px;max-width:100%;height:auto;border:0;">';
+      if(t.imgLink) img = '<a href="' + esc(webUrl(t.imgLink)) + '" style="text-decoration:none;">' + img + '</a>';
+      rows.push('<tr><td style="padding:16px 0 0 0;">' + img + '</td></tr>');
+    }
+    return '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;max-width:420px;' + FONT + '">' + rows.join('') + '</table>';
+  }
+
+  function plain(t, p){
+    const parts = [];
+    if(t.text && t.text.trim()) parts.push(t.text.trim().replace(/\*\*(.+?)\*\*/g,'$1').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'$1 ($2)'));
+    if(p.name) parts.push(p.name + (p.role ? '\n' + p.role : ''));
+    const c = [];
+    if(p.website) c.push(webShow(p.website));
+    if(p.email) c.push(p.email);
+    if(p.phone) c.push(p.phone);
+    if(c.length) parts.push(c.join('\n'));
+    return parts.join('\n\n');
+  }
+
+  // ---------- Oberfläche ----------
+  function fillSelect(sel, items, labelKey, current){
+    sel.innerHTML = items.map(i => '<option value="' + i.id + '"' + (i.id === current ? ' selected' : '') + '>' + esc(i[labelKey] || '(ohne Namen)') + '</option>').join('');
+  }
+
+  function renderForms(){
+    const t = tpl(), p = editProf();
+    fillSelect($('#tplSelect'), S.templates, 'name', t.id);
+    fillSelect($('#tProfile'), S.profiles, 'label', t.profileId);
+    fillSelect($('#profSelect'), S.profiles, 'label', p.id);
+    $$('[data-t]').forEach(el => {
+      const k = el.dataset.t;
+      if(k === 'profileId') return;
+      if(el.type === 'checkbox') el.checked = !!t[k]; else el.value = t[k] == null ? '' : t[k];
+    });
+    $$('[data-p]').forEach(el => { const k = el.dataset.p; el.value = p[k] == null ? '' : p[k]; });
+    renderPreview();
+  }
+
+  function renderPreview(){
+    const t = tpl(), p = prof(t.profileId);
+    $('#sigOut').innerHTML = build(t, p);
+    const w = [];
+    if(t.showPhoto && !p.photo) w.push('Beim Absender „' + (p.label || '') + '“ fehlt die Foto-Adresse.');
+    if(!p.logo) w.push('Beim Absender „' + (p.label || '') + '“ fehlt die Logo-Adresse.');
+    const urls = [t.showPhoto && p.photo, p.logo, t.img, p.iconWeb].filter(Boolean).map(abs);
+    if(urls.some(u => !/^https:\/\//i.test(u))) w.push('Bilder sind noch nicht online. Erst über GitHub Pages öffnen, dann kopieren – sonst fehlen die Bilder beim Empfänger.');
+    $('#warnings').innerHTML = w.map(x => '<li>' + esc(x) + '</li>').join('');
+  }
+
+  function flash(msg){ const s = $('#status'); s.textContent = msg; clearTimeout(flash.t); flash.t = setTimeout(() => s.textContent = '', 4000); }
+
+  // Eingaben Vorlage
+  $$('[data-t]').forEach(el => el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', () => {
+    const t = tpl(), k = el.dataset.t;
+    t[k] = el.type === 'checkbox' ? el.checked : el.value;
+    save();
+    if(k === 'name') fillSelect($('#tplSelect'), S.templates, 'name', t.id);
+    renderPreview();
+  }));
+  // Eingaben Absender
+  $$('[data-p]').forEach(el => el.addEventListener('input', () => {
+    const p = editProf(); p[el.dataset.p] = el.value; save();
+    if(el.dataset.p === 'label'){
+      fillSelect($('#profSelect'), S.profiles, 'label', p.id);
+      fillSelect($('#tProfile'), S.profiles, 'label', tpl().profileId);
+    }
+    renderPreview();
+  }));
+
+  $('#tplSelect').addEventListener('change', e => { S.tplId = e.target.value; save(); renderForms(); });
+  $('#profSelect').addEventListener('change', e => { S.profId = e.target.value; save(); renderForms(); });
+
+  $('#tplNew').addEventListener('click', () => {
+    const t = {id:uid(),name:'Neue Vorlage',profileId:tpl().profileId,text:'',showPhoto:true,img:'',imgLink:'',imgW:400,imgAlt:''};
+    S.templates.push(t); S.tplId = t.id; save(); renderForms(); $('#tName').select();
+  });
+  $('#tplDup').addEventListener('click', () => {
+    const t = Object.assign({}, tpl(), {id:uid(), name:tpl().name + ' (Kopie)'});
+    S.templates.push(t); S.tplId = t.id; save(); renderForms(); $('#tName').select();
+  });
+  $('#tplDel').addEventListener('click', () => {
+    if(S.templates.length < 2){ flash('Die letzte Vorlage kann nicht gelöscht werden.'); return; }
+    if(!confirm('Vorlage „' + tpl().name + '“ löschen?')) return;
+    S.templates = S.templates.filter(t => t.id !== S.tplId); S.tplId = S.templates[0].id; save(); renderForms();
+  });
+  $('#profNew').addEventListener('click', () => {
+    const p = blankProfile('Neuer Absender'); S.profiles.push(p); S.profId = p.id; save(); renderForms(); $('#pLabel').select();
+  });
+  $('#profDel').addEventListener('click', () => {
+    if(S.profiles.length < 2){ flash('Der letzte Absender kann nicht gelöscht werden.'); return; }
+    const p = editProf();
+    const used = S.templates.filter(t => t.profileId === p.id).length;
+    if(!confirm('Absender „' + p.label + '“ löschen?' + (used ? ' ' + used + ' Vorlage(n) bekommen dann einen anderen Absender.' : ''))) return;
+    S.profiles = S.profiles.filter(x => x.id !== p.id);
+    S.templates.forEach(t => { if(t.profileId === p.id) t.profileId = S.profiles[0].id; });
+    S.profId = S.profiles[0].id; save(); renderForms();
+  });
+
+  // Tabs
+  $$('[data-tab]').forEach(b => b.addEventListener('click', () => {
+    $$('[data-tab]').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+    $$('[data-panel]').forEach(pn => pn.hidden = pn.dataset.panel !== b.dataset.tab);
+  }));
+
+  // Ansicht
+  function setView(phone){
+    $('#mail').classList.toggle('phone', phone);
+    $('#viewDesk').setAttribute('aria-pressed', phone ? 'false' : 'true');
+    $('#viewPhone').setAttribute('aria-pressed', phone ? 'true' : 'false');
+  }
+  $('#viewDesk').addEventListener('click', () => setView(false));
+  $('#viewPhone').addEventListener('click', () => setView(true));
+
+  // Kopieren
+  function selectionCopy(node){
+    const r = document.createRange(); r.selectNodeContents(node);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    let ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
+    s.removeAllRanges(); return ok;
+  }
+  $('#copyRich').addEventListener('click', async () => {
+    const t = tpl(), p = prof(t.profileId), html = build(t, p);
+    try{
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([plain(t, p)], {type:'text/plain'})
+      })]);
+      flash('Signatur kopiert. Jetzt in Apple Mail einfügen.');
+    }catch(e){
+      flash(selectionCopy($('#sigOut')) ? 'Signatur kopiert. Jetzt in Apple Mail einfügen.' : 'Kopieren nicht möglich. Vorschau markieren und Cmd+C drücken.');
+    }
+  });
+  $('#copyHtml').addEventListener('click', async () => {
+    const t = tpl(), html = build(t, prof(t.profileId));
+    try{ await navigator.clipboard.writeText(html); flash('HTML-Code kopiert.'); }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = html; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); flash('HTML-Code kopiert.'); }catch(_){ flash('Kopieren nicht möglich.'); }
+      ta.remove();
+    }
+  });
+
+  // Sichern & teilen
+  $('#exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'signaturen-sicherung.json'; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    flash('Sicherungsdatei heruntergeladen.');
+  });
+  $('#importFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try{
+        const d = JSON.parse(r.result);
+        if(!Array.isArray(d.profiles) || !Array.isArray(d.templates) || !d.profiles.length || !d.templates.length) throw new Error();
+        d.tplId = d.templates.some(t => t.id === d.tplId) ? d.tplId : d.templates[0].id;
+        d.profId = d.profiles.some(p => p.id === d.profId) ? d.profId : d.profiles[0].id;
+        S = d; save(); renderForms(); flash('Sicherungsdatei geladen.');
+      }catch(_){ flash('Diese Datei ist keine gültige Sicherungsdatei.'); }
+      e.target.value = '';
+    };
+    r.readAsText(f);
+  });
+  $('#resetBtn').addEventListener('click', () => {
+    if(!confirm('Alle Vorlagen und Absender in diesem Browser löschen und neu beginnen?')) return;
+    S = defaults(); save(); renderForms(); flash('Zurückgesetzt.');
+  });
+
+  renderForms();
+})();
+</script>
+</body>
+</html>
