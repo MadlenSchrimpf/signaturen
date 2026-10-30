@@ -226,7 +226,29 @@ legend{font-weight:600;padding:0 6px;font-size:.95rem}
     const t2 = {id:uid(),name:'Dentolovers mit Flyer-Banner',profileId:p1.id,text:'',showPhoto:true,
       img:'bilder/banner-dentosophie-flyer.jpg',imgLink:'https://dentolovers.de/dentosophie-flyer/?utm_source=email&utm_medium=signatur&utm_campaign=dentosophie-flyer&utm_content=banner',imgW:560,
       imgAlt:'Individuelle Dentosophie-Flyer für dein Wartezimmer – mehr auf dentolovers.de'};
-    return {profiles:[p1,p2,p3],templates:[t,t2],tplId:t.id,profId:p1.id};
+    const ds = dentosophie();
+    const ms = madlenSchrimpf();
+    return {profiles:[p1].concat(ms.profiles,ds.profiles,[p2,p3]),templates:[t,t2].concat(ms.templates,ds.templates),tplId:t.id,profId:p1.id};
+  }
+  // madlenschrimpf.de: feste IDs, damit sie auch in bestehende Browser-Daten nachgetragen werden
+  function madlenSchrimpf(){
+    const p = Object.assign(blankProfile('madlenschrimpf.de'),{id:'ms-madlen',photo:'bilder/madlen.png',photoW:120,logo:'bilder/logo-madlen-schrimpf.png',logoW:260,
+      website:'madlenschrimpf.de',email:'hello@madlenschrimpf.de',phone:'+49 9133 6043047',
+      iconWeb:'bilder/icon-web.png',iconMail:'bilder/icon-mail.png',iconTel:'bilder/icon-tel.png',color:'#317694'});
+    const t = {id:'ms-madlen-t',name:'Madlen Schrimpf',profileId:p.id,text:'',showPhoto:true,img:'',imgLink:'',imgW:560,imgAlt:''};
+    return {profiles:[p],templates:[t]};
+  }
+  // Dentosophie Akademie: feste IDs, damit sie auch in bestehende Browser-Daten nachgetragen werden
+  function dentosophie(){
+    const base = {logo:'bilder/logo-dentosophie.png',logoW:220,photoW:110,website:'dentosophie-ausbildung.de',color:'#3f3a66'};
+    const people = [
+      ['ds-nancy','Dentosophie – Nancy','Nancy Remané I Kundensupport','bilder/nancy.png','team@dentosophie-ausbildung.de'],
+      ['ds-maren','Dentosophie – Maren','Dr. Maren Koch','bilder/maren.png','info@dentosophie-ausbildung.de'],
+      ['ds-madlen','Dentosophie – Madlen','Madlen Schrimpf I Marketing','bilder/madlen-dentosophie.png','marketing@dentosophie-ausbildung.de']
+    ];
+    const profiles = people.map(x => Object.assign(blankProfile(x[1]),base,{id:x[0],name:x[2],photo:x[3],email:x[4],iconWeb:'bilder/icon-web.png',iconMail:'bilder/icon-mail.png'}));
+    const templates = people.map(x => ({id:x[0]+'-t',name:x[1],profileId:x[0],text:'',showPhoto:true,img:'',imgLink:'',imgW:560,imgAlt:''}));
+    return {profiles:profiles,templates:templates};
   }
   function load(){
     try{
@@ -234,6 +256,10 @@ legend{font-weight:600;padding:0 6px;font-size:.95rem}
       if(!raw) return defaults();
       const d = JSON.parse(raw);
       if(!Array.isArray(d.profiles) || !Array.isArray(d.templates) || !d.profiles.length || !d.templates.length) return defaults();
+      [madlenSchrimpf(), dentosophie()].forEach(g => {
+        g.profiles.forEach(p => { const o = d.profiles.find(x => x.id === p.id); if(!o) d.profiles.push(p); else if(!o.email && p.email){ o.email = p.email; o.iconWeb = o.iconWeb || p.iconWeb; o.iconMail = o.iconMail || p.iconMail; } });
+        g.templates.forEach(t => { if(!d.templates.some(x => x.id === t.id)) d.templates.push(t); });
+      });
       return d;
     }catch(e){ return defaults(); }
   }
